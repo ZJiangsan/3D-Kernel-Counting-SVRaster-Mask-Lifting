@@ -1,8 +1,8 @@
 # SVRaster configuration
 
-`svraster_rgb_stage1.yaml` contains the verified Stage-1 overrides used for the RGB-only SVRaster geometry reconstruction in the final proposed pipeline.
+`svraster_rgb_reconstruction.yaml` contains the minimal overrides for the **final RGB-only SVRaster reconstruction** used in the proposed pipeline.
 
-The original research script trained Stage 1 from the RGB `images` directory for 20,000 iterations with `bound_scale = 0.85` and `res_downscale = 1.0`. Kernel masks were not used to optimize the final geometry (`lambda_mask = 0.0`). The later experimental mask-image fine-tuning stage was abandoned and is not part of the final method.
+The final workflow trains SVRaster from the RGB `images` directory for 20,000 iterations with `bound_scale = 0.85` and `res_downscale = 1.0`. Kernel masks are not used to train or fine-tune the SVRaster representation. After RGB reconstruction is complete, the masks are introduced only by the post-hoc mask-lifting script.
 
 The configuration file is intentionally provided as a **minimal override** rather than a synthetic full configuration. Apply it on top of the official NVlabs/SVRaster defaults corresponding to the SVRaster version used for the experiment.
 
