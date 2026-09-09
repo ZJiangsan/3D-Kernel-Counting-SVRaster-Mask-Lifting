@@ -1,15 +1,16 @@
 # Public-release checklist
 
-Before pushing this package as the manuscript's official code repository:
+Before treating this package as the manuscript's final public code release:
 
-- [ ] Verify the unscaled-mask value: supplied source script gives MAE = **80.22**, while the current manuscript draft says 80.00.
-- [ ] Add the exact RGB SVRaster `config.yaml` used for the reported experiments.
-- [ ] Add the trained four-image U-Net checkpoint.
-- [ ] If exact U-Net continuation matters, add the previous three-image checkpoint or document its source.
-- [ ] Add/release the nine-ear RGB dataset and annotation files, or replace the manuscript claim with a stable external data link.
+- [x] Report the script-recorded unscaled-mask value consistently as **MAE = 80.22**.
+- [x] Document the final **RGB-only SVRaster reconstruction → post-hoc mask lifting** workflow.
+- [x] Provide the minimal RGB reconstruction override as `configs/svraster_rgb_reconstruction.yaml`.
+- [ ] Add the trained four-image U-Net checkpoint if redistribution is appropriate.
+- [ ] If exact U-Net continuation matters, document or release the previous checkpoint used for initialization.
+- [ ] Add/release the nine-ear RGB dataset and annotation files, or provide a stable external data link if available.
 - [ ] Add the original SD3 experiment implementation if SD3 remains in the manuscript comparison figure.
-- [ ] Verify that all public paths/file names are free of internal/local identifiers.
+- [x] Remove internal/local checkpoint names and obsolete experimental-stage terminology from public documentation.
 - [ ] Choose a software license and add `LICENSE`.
 - [ ] Update `CITATION.cff` with DOI/journal information after acceptance/publication.
 - [ ] Run `python -m unittest discover -s tests` after `pip install -e .`.
-- [ ] Run one end-to-end cob example from RGB masks through mask lifting and counting on a clean environment.
+- [ ] Run one end-to-end ear example from RGB reconstruction through mask lifting and counting on a clean environment when the data can be shared.
