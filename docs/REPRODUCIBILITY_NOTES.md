@@ -1,6 +1,6 @@
 # Reproducibility notes before public release
 
-This repository package was reconstructed from the manuscript-related Python scripts supplied on 9 September 2026. The goal was to preserve scientific logic while removing duplicated notebook-style code, local-path assumptions, exploratory plots, and abandoned experimental branches from the **core** pipeline.
+This repository package was reconstructed from the manuscript-related Python scripts supplied on 9 September 2026. The goal was to preserve scientific logic while removing duplicated notebook-style code, local-path assumptions, exploratory plots, and non-final experimental branches from the **core** pipeline.
 
 ## Confirmed reference outputs
 
@@ -41,8 +41,6 @@ The actual research script confirms that the RGB reconstruction:
 Kernel masks are not used to train or fine-tune the final SVRaster representation. A minimal reconstruction override is therefore provided as `configs/svraster_rgb_reconstruction.yaml`.
 
 After RGB reconstruction, `scripts/04_svraster_mask_lifting.py` loads the trained RGB checkpoint, renders depth/transmittance, extracts a TSDF surface, and then projects the 2D kernel masks onto those fixed surface points. This post-hoc lifting step is the only point at which kernel masks interact with the final SVRaster geometry.
-
-Abandoned mask-based SVRaster optimization experiments are intentionally excluded from the public core workflow because they are not part of the proposed method.
 
 ## External SVRaster dependency
 
