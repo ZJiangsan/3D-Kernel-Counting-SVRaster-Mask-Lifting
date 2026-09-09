@@ -1,12 +1,22 @@
 # 3D Kernel Counting with SVRaster Mask Lifting
 
-Research code for **Geometry-First Proportional Mask Lifting and Topology-Aware Clustering Improve 3D Maize Kernel Counting**.
+Research code for **Geometry-First Mask Lifting and Topology-Aware Instance Separation for 3D Maize Kernel Counting**.
 
-The repository implements the new pipeline developed as a methodological follow-up to the authors' previous InvNeRF-Seg maize kernel-counting study:
+The repository implements the final pipeline developed as a methodological follow-up to the authors' previous InvNeRF-Seg maize kernel-counting study.
 
-**RGB views → U-Net incomplete surface masks → proportional dot masks → RGB-only SVRaster reconstruction → post-hoc mask lifting → topology-aware clustering → kernel count**
+The proposed SVRaster workflow contains **one RGB reconstruction step only**. Kernel masks do not train or fine-tune SVRaster. The two information streams meet only after the RGB geometry has been reconstructed:
 
-The complete new pipeline produced the nine-ear predictions stored in `results/proposed_predictions.csv` (MAE = 3.00). The corresponding proportional-mask/no-adaptive-split ablation is stored in `results/proportional_no_split_predictions.csv` (MAE = 14.67).
+```text
+Multi-view RGB images ──> RGB-only SVRaster reconstruction ──> fixed 3D surface ──┐
+                                                                                  ├─> post-hoc mask lifting
+Multi-view RGB images ──> U-Net surface masks ──> proportional masks ─────────────┘
+                                                                                          ↓
+                                                                            topology-aware clustering
+                                                                                          ↓
+                                                                                     kernel count
+```
+
+The complete pipeline produced the nine-ear predictions stored in `results/proposed_predictions.csv` (MAE = 3.00). The corresponding proportional-mask/no-adaptive-split ablation is stored in `results/proportional_no_split_predictions.csv` (MAE = 14.67).
 
 ## Repository layout
 
@@ -27,7 +37,7 @@ The complete new pipeline produced the nine-ear predictions stored in `results/p
 │   └── metrics.py
 ├── baselines/
 ├── configs/
-│   └── svraster_rgb_stage1.yaml
+│   └── svraster_rgb_reconstruction.yaml
 ├── data/
 ├── weights/
 ├── results/
@@ -62,7 +72,7 @@ data/
 
 ## 3. U-Net mask generation
 
-Four manually annotated RGB images were used in the present study. The fourth image was added as a conservative control against poor 2D mask generation being the downstream bottleneck; its effect was not evaluated separately.
+Four manually annotated RGB images from different ears and complementary viewing angles were used in the present study. Only the visible outward-facing kernel surfaces were annotated.
 
 Train/fine-tune the U-Net:
 
@@ -73,17 +83,17 @@ python scripts/01_train_unet.py \
   --output weights/kernel_unet.pth
 ```
 
-The original development script loaded a previous U-Net checkpoint before continuing training. To reproduce that continuation explicitly, use:
+The original development script initialized the present training run from a previous U-Net checkpoint. To reproduce continuation from an earlier checkpoint explicitly, use:
 
 ```bash
 python scripts/01_train_unet.py \
   --images data/annotations/images \
   --labels data/annotations/labels \
-  --resume weights/previous_3image_unet.pth \
+  --resume weights/previous_unet.pth \
   --output weights/kernel_unet.pth
 ```
 
-Generate incomplete masks for all views:
+Generate incomplete surface masks for all views:
 
 ```bash
 python scripts/02_infer_unet_masks.py \
@@ -94,7 +104,7 @@ python scripts/02_infer_unet_masks.py \
 
 ## 4. Proportional mask transformation
 
-The manuscript uses distance-transform maxima to preserve kernel centers and scales each local radius by `alpha`.
+The manuscript uses a distance-transform-based proportional reduction to retain compact central portions of the predicted visible surface regions and improve separation before 3D lifting.
 
 ```bash
 python scripts/03_generate_proportional_masks.py \
@@ -105,23 +115,19 @@ python scripts/03_generate_proportional_masks.py \
 
 The alpha sweep evaluated `0.2, 0.4, 0.6, 0.8, 1.0`.
 
-## 5. SVRaster reconstruction and mask lifting
+## 5. RGB-only SVRaster reconstruction and post-hoc mask lifting
 
-The final method uses **RGB-only SVRaster geometry**. The research script trained Stage 1 from the RGB `images` directory for **20,000 iterations**. Kernel masks did not optimize the final geometry; they were applied later through post-hoc mask lifting.
+The final method first trains **SVRaster from RGB images only for 20,000 iterations**. Kernel masks are not used during SVRaster training and there is no mask-based SVRaster fine-tuning stage in the proposed workflow.
 
-A verified minimal Stage-1 override is provided in:
+A minimal reconstruction override is provided in:
 
 ```text
-configs/svraster_rgb_stage1.yaml
+configs/svraster_rgb_reconstruction.yaml
 ```
 
-Apply that file on top of the official NVlabs/SVRaster defaults for the corresponding SVRaster version, edit `source_path`, and train the RGB geometry.
+Apply that file on top of the official NVlabs/SVRaster defaults for the corresponding SVRaster version, edit `source_path`, and train the RGB geometry. Trained SVRaster checkpoints are not included because they are very large; users are expected to train the RGB geometry themselves.
 
-The research code also contained a later experimental stage that fine-tuned the already-trained representation using mask images. That branch was abandoned and is **not part of the final proposed pipeline**.
-
-Trained SVRaster checkpoints are not included because they are very large. Users are expected to train the RGB SVRaster geometry themselves from the provided settings and the official SVRaster implementation.
-
-Then lift the masks to the RGB-trained reconstructed surface:
+After RGB reconstruction is complete, lift the proportional masks onto the fixed RGB-trained surface:
 
 ```bash
 python scripts/04_svraster_mask_lifting.py \
@@ -132,7 +138,7 @@ python scripts/04_svraster_mask_lifting.py \
   --output outputs/cob1_alpha06_lifted.ply
 ```
 
-`--mask-dir-name` is interpreted relative to the source dataset stored in the SVRaster model's `config.yaml`, matching the original experiment.
+The lifting script uses the trained RGB model for rendered depth/transmittance and TSDF surface extraction, then projects the 2D masks onto those fixed surface points. `--mask-dir-name` is interpreted relative to the source dataset stored in the SVRaster model's `config.yaml`.
 
 ## 6. Kernel clustering and counting
 
@@ -193,11 +199,11 @@ The previous InvNeRF-Seg maize-kernel pipeline is the main historical baseline f
 
 https://github.com/ZJiangsan/Automated-3D-Kernel-Instance-Segmentation-and-Counting
 
-The new repository does not duplicate that entire codebase. `baselines/` contains concise provenance/reference scripts for the additional full-mask SVRaster and FruitNeRF comparisons; the notebook-style exploratory drivers were intentionally excluded from the clean public pipeline. See `baselines/README.md`.
+The new repository does not duplicate that entire codebase. `baselines/` contains concise provenance/reference scripts for the additional unscaled-mask SVRaster and FruitNeRF comparisons; the notebook-style exploratory drivers were intentionally excluded from the clean public pipeline. See `baselines/README.md`.
 
 ## Reproducibility status
 
-The code necessary for the **core proposed method** is organized here, including a verified minimal RGB-only SVRaster Stage-1 configuration. The repository intentionally does not distribute the very large trained SVRaster checkpoints. The RGB image dataset, trained U-Net weights, and SD3 comparison implementation are also not currently bundled. See `docs/REPRODUCIBILITY_NOTES.md` for details.
+The code necessary for the **core proposed method** is organized here, including the minimal RGB-only SVRaster reconstruction configuration. The repository intentionally does not distribute the very large trained SVRaster checkpoints. The RGB image dataset, trained U-Net weights, and SD3 comparison implementation are also not currently bundled. See `docs/REPRODUCIBILITY_NOTES.md` for details.
 
 ## Citation
 
