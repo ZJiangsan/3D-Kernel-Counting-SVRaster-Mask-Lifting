@@ -12,9 +12,7 @@ The final supplied counting script records:
 - Proportional masks without optimized/adaptive splitting: `[684, 335, 721, 295, 520, 442, 643, 488, 717]`
 - MAE: `14.666666...`
 
-The supplied unscaled-mask SVRaster script records a no-split MAE of `80.222222...`, not exactly `80.00`.
-
-**Action before manuscript resubmission:** verify whether `80.00` came from a different final run. If not, update the manuscript/Figure 2 to `80.22`.
+The supplied unscaled-mask SVRaster script records a no-split MAE of `80.222222...`. This repository reports that value directly as `80.22` when rounded to two decimals.
 
 ## U-Net protocol
 
