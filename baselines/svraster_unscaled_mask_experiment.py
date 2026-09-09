@@ -6,8 +6,8 @@ clustering experiments, plotting, and historical results. The clean repository
 keeps the reported per-ear predictions in results/unscaled_no_split_predictions.csv
 and evaluates them here.
 
-Important: the supplied source records MAE = 80.2222 for this no-split run.
-That should be reconciled with any manuscript text/figure showing 80.00.
+The supplied source records MAE = 80.2222 for this no-split run, and that value
+is reported directly without reinterpretation.
 """
 from pathlib import Path
 import csv, json, sys
