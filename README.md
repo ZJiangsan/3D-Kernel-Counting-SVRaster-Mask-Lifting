@@ -27,6 +27,7 @@ The complete new pipeline produced the nine-ear predictions stored in `results/p
 │   └── metrics.py
 ├── baselines/
 ├── configs/
+│   └── svraster_rgb_stage1.yaml
 ├── data/
 ├── weights/
 ├── results/
@@ -58,8 +59,6 @@ data/
     ├── masks/           # U-Net incomplete surface masks
     └── masks_alpha06/   # proportional masks, alpha = 0.6
 ```
-
-The RGB-trained SVRaster model directory must contain the `config.yaml` and saved model iteration expected by the official SVRaster code. See `configs/README.md`.
 
 ## 3. U-Net mask generation
 
@@ -108,9 +107,21 @@ The alpha sweep evaluated `0.2, 0.4, 0.6, 0.8, 1.0`.
 
 ## 5. SVRaster reconstruction and mask lifting
 
-Train the RGB geometry with the **official SVRaster repository**. Kernel masks are not used to optimize the proposed SVRaster geometry. They enter only after reconstruction through mask lifting.
+The final method uses **RGB-only SVRaster geometry**. The research script trained Stage 1 from the RGB `images` directory for **20,000 iterations**. Kernel masks did not optimize the final geometry; they were applied later through post-hoc mask lifting.
 
-Then lift the masks to the reconstructed surface:
+A verified minimal Stage-1 override is provided in:
+
+```text
+configs/svraster_rgb_stage1.yaml
+```
+
+Apply that file on top of the official NVlabs/SVRaster defaults for the corresponding SVRaster version, edit `source_path`, and train the RGB geometry.
+
+The research code also contained a later experimental stage that fine-tuned the already-trained representation using mask images. That branch was abandoned and is **not part of the final proposed pipeline**.
+
+Trained SVRaster checkpoints are not included because they are very large. Users are expected to train the RGB SVRaster geometry themselves from the provided settings and the official SVRaster implementation.
+
+Then lift the masks to the RGB-trained reconstructed surface:
 
 ```bash
 python scripts/04_svraster_mask_lifting.py \
@@ -186,7 +197,7 @@ The new repository does not duplicate that entire codebase. `baselines/` contain
 
 ## Reproducibility status
 
-The code necessary for the **core proposed method** is organized here. The supplied files did **not** include the RGB SVRaster `config.yaml`, the image dataset, trained U-Net weights, or an SD3 implementation. Placeholders and explicit notes are provided rather than inventing missing materials. See `docs/REPRODUCIBILITY_NOTES.md` before making the repository public.
+The code necessary for the **core proposed method** is organized here, including a verified minimal RGB-only SVRaster Stage-1 configuration. The repository intentionally does not distribute the very large trained SVRaster checkpoints. The RGB image dataset, trained U-Net weights, and SD3 comparison implementation are also not currently bundled. See `docs/REPRODUCIBILITY_NOTES.md` for details.
 
 ## Citation
 
