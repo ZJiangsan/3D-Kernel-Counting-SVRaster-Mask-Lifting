@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.DS_Store
+
+# Large/generated experiment artifacts
+outputs/
+checkpoints/
+*.pth
+*.pt
+*.ckpt
+*.ply
+*.npy
+*.npz
+*.tif
+*.tiff
+
+# Keep repository-provided CSV reference results
+!results/*.csv

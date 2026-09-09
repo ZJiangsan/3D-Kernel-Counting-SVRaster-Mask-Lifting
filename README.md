@@ -1,23 +1,193 @@
-3D Kernel Counting via SVRaster-Based Mask Lifting
+# 3D Kernel Counting with SVRaster Mask Lifting
 
-This repository provides the official implementation of the pipeline described in the manuscript:
+Research code for **Geometry-First Proportional Mask Lifting and Topology-Aware Clustering Improve 3D Maize Kernel Counting**.
 
-“3D Kernel Counting via SVRaster-Based Mask Lifting”
+The repository implements the new pipeline developed as a methodological follow-up to the authors' previous InvNeRF-Seg maize kernel-counting study:
 
-The method enables accurate three-dimensional (3D) kernel counting on maize cobs using a geometry-first reconstruction paradigm. A high-quality surface geometry is first reconstructed from RGB images using SVRaster, after which sparse two-dimensional (2D) kernel masks are projected onto the reconstructed geometry through post hoc mask lifting. Kernel instances are then separated using topology-aware clustering and counted automatically.
+**RGB views → U-Net incomplete surface masks → proportional dot masks → RGB-only SVRaster reconstruction → post-hoc mask lifting → topology-aware clustering → kernel count**
 
-Unlike segmentation-driven radiance-field methods, mask information in this pipeline does not influence geometry reconstruction. Instead, mask morphology is used only during post-processing, allowing sparse supervision without destabilizing reconstruction.
+The complete new pipeline produced the nine-ear predictions stored in `results/proposed_predictions.csv` (MAE = 3.00). The corresponding proportional-mask/no-adaptive-split ablation is stored in `results/proportional_no_split_predictions.csv` (MAE = 14.67).
 
-Key Features
+## Repository layout
 
-Geometry-first 3D reconstruction using SVRaster
+```text
+.
+├── scripts/
+│   ├── 01_train_unet.py
+│   ├── 02_infer_unet_masks.py
+│   ├── 03_generate_proportional_masks.py
+│   ├── 04_svraster_mask_lifting.py
+│   ├── 05_count_kernels.py
+│   ├── 06_evaluate_counts.py
+│   └── 07_alpha_ablation_counts.py
+├── src/kernel3d/
+│   ├── masks.py
+│   ├── unet.py
+│   ├── clustering.py
+│   └── metrics.py
+├── baselines/
+├── configs/
+├── data/
+├── weights/
+├── results/
+└── docs/
+```
 
-Proportional dot-mask transformation to reduce kernel merging
+## 1. Installation
 
-Post hoc mask lifting onto reconstructed surfaces
+The core post-processing code is ordinary Python, but geometry reconstruction depends on the official SVRaster implementation.
 
-Topology-aware kernel clustering and counting
+```bash
+# Create a Python environment of your choice, then:
+pip install -r requirements.txt
 
-Robust handling of densely packed kernel structures
+git clone https://github.com/NVlabs/svraster.git external/svraster
+# Follow the official SVRaster installation instructions, including its CUDA extension.
+```
 
-Scripts to reproduce all experiments and figures in the manuscript
+The scripts were derived from the actual research scripts supplied for the manuscript. Hard-coded local paths, duplicated experimental blocks, and exploratory plotting code were removed from the core pipeline.
+
+## 2. Data layout
+
+A minimal example is:
+
+```text
+data/
+└── cob1/
+    ├── images/          # RGB frames used by COLMAP/SVRaster
+    ├── masks/           # U-Net incomplete surface masks
+    └── masks_alpha06/   # proportional masks, alpha = 0.6
+```
+
+The RGB-trained SVRaster model directory must contain the `config.yaml` and saved model iteration expected by the official SVRaster code. See `configs/README.md`.
+
+## 3. U-Net mask generation
+
+Four manually annotated RGB images were used in the present study. The fourth image was added as a conservative control against poor 2D mask generation being the downstream bottleneck; its effect was not evaluated separately.
+
+Train/fine-tune the U-Net:
+
+```bash
+python scripts/01_train_unet.py \
+  --images data/annotations/images \
+  --labels data/annotations/labels \
+  --output weights/kernel_unet.pth
+```
+
+The original development script loaded a previous U-Net checkpoint before continuing training. To reproduce that continuation explicitly, use:
+
+```bash
+python scripts/01_train_unet.py \
+  --images data/annotations/images \
+  --labels data/annotations/labels \
+  --resume weights/previous_3image_unet.pth \
+  --output weights/kernel_unet.pth
+```
+
+Generate incomplete masks for all views:
+
+```bash
+python scripts/02_infer_unet_masks.py \
+  --images data/cob1/images \
+  --checkpoint weights/kernel_unet.pth \
+  --output data/cob1/masks
+```
+
+## 4. Proportional mask transformation
+
+The manuscript uses distance-transform maxima to preserve kernel centers and scales each local radius by `alpha`.
+
+```bash
+python scripts/03_generate_proportional_masks.py \
+  --masks data/cob1/masks \
+  --output data/cob1/masks_alpha06 \
+  --alpha 0.6
+```
+
+The alpha sweep evaluated `0.2, 0.4, 0.6, 0.8, 1.0`.
+
+## 5. SVRaster reconstruction and mask lifting
+
+Train the RGB geometry with the **official SVRaster repository**. Kernel masks are not used to optimize the proposed SVRaster geometry. They enter only after reconstruction through mask lifting.
+
+Then lift the masks to the reconstructed surface:
+
+```bash
+python scripts/04_svraster_mask_lifting.py \
+  --svraster-root external/svraster \
+  --model-path /path/to/cob1_rgb_svraster_model \
+  --mask-dir-name masks_alpha06 \
+  --iteration 20000 \
+  --output outputs/cob1_alpha06_lifted.ply
+```
+
+`--mask-dir-name` is interpreted relative to the source dataset stored in the SVRaster model's `config.yaml`, matching the original experiment.
+
+## 6. Kernel clustering and counting
+
+```bash
+python scripts/05_count_kernels.py \
+  --input outputs/cob1_alpha06_lifted.ply \
+  --output-dir outputs/counts
+```
+
+For the no-adaptive-split ablation:
+
+```bash
+python scripts/05_count_kernels.py \
+  --input outputs/cob1_alpha06_lifted.ply \
+  --no-adaptive-split \
+  --output-dir outputs/counts_no_split
+```
+
+The final clustering implementation preserves the experimental parameters for PCA-based head/center/tail partitioning, local-density bridge removal, region-specific DBSCAN, and adaptive DBSCAN/K-means subdivision of oversized clusters.
+
+## 7. Evaluation
+
+`results/proposed_predictions.csv` contains the final reported nine-ear counts.
+
+```bash
+python scripts/06_evaluate_counts.py --csv results/proposed_predictions.csv
+```
+
+Expected MAE: **3.00 kernels**.
+
+The no-adaptive-split result in `results/proportional_no_split_predictions.csv` has expected MAE **14.67 kernels**.
+
+## 8. Alpha ablation
+
+After generating and lifting point clouds for each alpha, arrange them as:
+
+```text
+outputs/alpha_sweep/
+├── alpha_0.2/*.ply
+├── alpha_0.4/*.ply
+├── alpha_0.6/*.ply
+├── alpha_0.8/*.ply
+└── alpha_1.0/*.ply
+```
+
+Then run:
+
+```bash
+python scripts/07_alpha_ablation_counts.py \
+  --root outputs/alpha_sweep \
+  --ground-truth results/ground_truth_counts.csv \
+  --output results/alpha_ablation_results.csv
+```
+
+## Baselines and previous study
+
+The previous InvNeRF-Seg maize-kernel pipeline is the main historical baseline for this study and is maintained separately:
+
+https://github.com/ZJiangsan/Automated-3D-Kernel-Instance-Segmentation-and-Counting
+
+The new repository does not duplicate that entire codebase. `baselines/` contains concise provenance/reference scripts for the additional full-mask SVRaster and FruitNeRF comparisons; the notebook-style exploratory drivers were intentionally excluded from the clean public pipeline. See `baselines/README.md`.
+
+## Reproducibility status
+
+The code necessary for the **core proposed method** is organized here. The supplied files did **not** include the RGB SVRaster `config.yaml`, the image dataset, trained U-Net weights, or an SD3 implementation. Placeholders and explicit notes are provided rather than inventing missing materials. See `docs/REPRODUCIBILITY_NOTES.md` before making the repository public.
+
+## Citation
+
+A provisional citation is provided in `CITATION.cff`. Update it when the manuscript receives a DOI or final bibliographic information.

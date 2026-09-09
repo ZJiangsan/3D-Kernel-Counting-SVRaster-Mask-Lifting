@@ -1,0 +1,10 @@
+numpy
+opencv-python
+scikit-image
+scikit-learn
+matplotlib
+trimesh
+tqdm
+albumentations
+torch
+segmentation-models-pytorch

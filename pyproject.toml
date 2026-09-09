@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kernel3d-svraster"
+version = "0.1.0"
+description = "Geometry-first proportional mask lifting and topology-aware 3D maize kernel counting"
+requires-python = ">=3.10"
+authors = [
+  {name = "Jiangsan Zhao"},
+  {name = "Xuean Cui"},
+]
+dependencies = [
+  "numpy",
+  "opencv-python",
+  "scikit-image",
+  "scikit-learn",
+  "matplotlib",
+  "trimesh",
+  "tqdm",
+  "albumentations",
+  "torch",
+  "segmentation-models-pytorch",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

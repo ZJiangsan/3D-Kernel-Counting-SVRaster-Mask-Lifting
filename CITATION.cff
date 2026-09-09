@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+title: "3D Kernel Counting with SVRaster Mask Lifting"
+message: "If you use this code, please cite the associated maize kernel-counting manuscript."
+type: software
+authors:
+  - family-names: Zhao
+    given-names: Jiangsan
+  - family-names: Cui
+    given-names: Xuean
+version: 0.1.0
+date-released: 2026-09-09
+repository-code: "https://github.com/ZJiangsan/3D-Kernel-Counting-SVRaster-Mask-Lifting"

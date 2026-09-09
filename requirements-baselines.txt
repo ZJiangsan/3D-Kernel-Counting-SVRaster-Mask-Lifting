@@ -1,0 +1,6 @@
+# Baseline scripts additionally depend on their original research environments.
+# Install these only if reproducing the legacy FruitNeRF experiment.
+nerfstudio
+torchmetrics
+pillow
+tifffile
