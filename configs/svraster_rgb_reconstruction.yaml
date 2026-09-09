@@ -1,0 +1,20 @@
+# Minimal overrides for the final RGB-only SVRaster reconstruction.
+#
+# The proposed workflow trains SVRaster from RGB images only. Kernel masks are
+# not used to train or fine-tune the SVRaster representation. Masks are applied
+# only afterward by scripts/04_svraster_mask_lifting.py.
+#
+# Apply these overrides on top of the official NVlabs/SVRaster defaults for the
+# corresponding code version.
+
+bounding:
+  bound_scale: 0.85
+
+data:
+  # Replace with the directory for one maize-ear dataset.
+  source_path: /path/to/maize_ear_dataset
+  image_dir_name: images
+  res_downscale: 1.0
+
+procedure:
+  n_iter: 20000
