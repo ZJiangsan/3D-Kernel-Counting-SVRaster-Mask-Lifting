@@ -48,6 +48,12 @@ The mask-lifting code imports internal modules from the official NVlabs/SVRaster
 
 Trained SVRaster model checkpoints are intentionally not distributed because of their very large size. Users should train the RGB geometry themselves using the official SVRaster implementation together with `configs/svraster_rgb_reconstruction.yaml`, then apply the provided mask-lifting and counting scripts.
 
+## Scope of the public reproducibility release
+
+This repository is intended to reproduce the **proposed RGB-only SVRaster reconstruction, post-hoc mask-lifting, and topology-aware counting pipeline**, together with the included ablations and reference prediction tables.
+
+The manuscript also reports SD3 in Figure 2 as a secondary comparison. The original SD3 development script used for that experiment is not included in this cleaned repository. Therefore, the public release does **not** claim end-to-end reproduction of every comparison method in Figure 2. The reported SD3 values are preserved as manuscript results rather than replaced by a newly written implementation that might not match the code used in the experiment.
+
 ## Release artifacts not bundled here
 
 The repository does not currently include:
@@ -55,6 +61,6 @@ The repository does not currently include:
 1. the RGB image dataset;
 2. trained U-Net weights;
 3. trained SVRaster checkpoints (intentionally omitted because of size);
-4. the SD3 comparison script.
+4. the original SD3 comparison script.
 
-The minimal RGB-only SVRaster reconstruction configuration is included. The manuscript Data Availability statement distinguishes between code/configuration that is available and large model/data artifacts that are not distributed in this repository.
+The minimal RGB-only SVRaster reconstruction configuration is included. The manuscript Data Availability statement distinguishes between the released proposed-method code/configuration and large model/data artifacts that are not distributed in this repository.
