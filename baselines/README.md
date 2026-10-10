@@ -20,4 +20,6 @@ This is a compact provenance/configuration record for the supplied FruitNeRF bas
 
 ## SD3
 
-No SD3 source script was found in the files supplied for this repository build or in the searched file library. Therefore an SD3 implementation is **not invented here**. Add the original SD3 experiment script before claiming that every manuscript comparison is fully reproducible from this repository.
+SD3 appears in Figure 2 as a **secondary comparison**. The original development script used for that comparison is not included in this cleaned repository. Accordingly, the repository's reproducibility claim is limited to the **proposed RGB-only SVRaster → post-hoc mask-lifting → topology-aware counting pipeline and the included ablations**; it does not claim end-to-end reproduction of every comparison method shown in the manuscript.
+
+The SD3 values shown in Figure 2 are retained as reported experimental results from the manuscript study. No replacement SD3 implementation is fabricated here because doing so could differ from the code used to generate those reported values.
