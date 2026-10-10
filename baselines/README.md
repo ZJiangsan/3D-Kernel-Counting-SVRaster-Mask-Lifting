@@ -18,8 +18,10 @@ This is a compact reference evaluator for the supplied unscaled/full incomplete-
 
 This is a compact provenance/configuration record for the supplied FruitNeRF baseline. The large notebook-style training driver is not part of the proposed method and was intentionally not copied into the clean public pipeline.
 
-## SD3
+## SA3D
 
-SD3 appears in Figure 2 as a **secondary comparison**. The original development script used for that comparison is not included in this cleaned repository. Accordingly, the repository's reproducibility claim is limited to the **proposed RGB-only SVRaster → post-hoc mask-lifting → topology-aware counting pipeline and the included ablations**; it does not claim end-to-end reproduction of every comparison method shown in the manuscript.
+Figure 2 includes a **SA3D post-hoc mask back-projection baseline** (Cen et al., 2023, *Segment Anything in 3D with NeRFs*) as a secondary comparison. In the manuscript experiment, the relevant post-hoc component operates on a pretrained RGB NeRF without retraining the underlying radiance field and transfers 2D masks into 3D using volumetric rendering weights.
 
-The SD3 values shown in Figure 2 are retained as reported experimental results from the manuscript study. No replacement SD3 implementation is fabricated here because doing so could differ from the code used to generate those reported values.
+The original development script used for this SA3D comparison is not included in the cleaned repository. Accordingly, the repository's reproducibility claim is limited to the **proposed RGB-only SVRaster → post-hoc mask-lifting → topology-aware counting pipeline and the included ablations**; it does not claim end-to-end reproduction of every comparison method shown in the manuscript.
+
+The SA3D values in Figure 2 are retained as reported experimental results. A replacement implementation is intentionally not fabricated after the fact because it might differ from the code used to generate those values.
