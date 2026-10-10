@@ -205,7 +205,7 @@ The new repository does not duplicate that entire codebase. `baselines/` contain
 
 The code necessary for the **core proposed method** is organized here, including the minimal RGB-only SVRaster reconstruction configuration. The repository intentionally does not distribute the very large trained SVRaster checkpoints. The RGB image dataset and trained U-Net weights are also not currently bundled.
 
-Figure 2 includes SD3 as a **secondary comparison**, but the original SD3 development script is not part of this cleaned release. The repository therefore claims reproducibility for the proposed SVRaster pipeline and included ablations, **not end-to-end reproducibility of every comparison method shown in the manuscript**. See `baselines/README.md` and `docs/REPRODUCIBILITY_NOTES.md` for details.
+Figure 2 includes the **SA3D post-hoc mask back-projection baseline** as a secondary comparison. The original development script used for that SA3D comparison is not part of this cleaned release. The repository therefore claims reproducibility for the proposed SVRaster pipeline and included ablations, **not end-to-end reproducibility of every comparison method shown in the manuscript**. See `baselines/README.md` and `docs/REPRODUCIBILITY_NOTES.md` for details.
 
 ## Citation
 
