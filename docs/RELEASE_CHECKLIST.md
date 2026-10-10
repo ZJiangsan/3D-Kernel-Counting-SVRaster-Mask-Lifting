@@ -8,7 +8,7 @@ Before treating this package as the manuscript's final public code release:
 - [ ] Add the trained four-image U-Net checkpoint if redistribution is appropriate.
 - [ ] If exact U-Net continuation matters, document or release the previous checkpoint used for initialization.
 - [ ] Add/release the nine-ear RGB dataset and annotation files, or provide a stable external data link if available.
-- [x] Clarify SD3 reproducibility scope: Figure 2 retains SD3 as a reported secondary comparison, but the original SD3 development script is not part of this cleaned release. The repository therefore claims reproducibility for the proposed SVRaster pipeline and included ablations, not for every baseline comparison shown in the manuscript.
+- [x] Clarify SA3D reproducibility scope: Figure 2 retains the SA3D post-hoc mask back-projection result as a reported secondary comparison, but the original SA3D development script is not part of this cleaned release. The repository therefore claims reproducibility for the proposed SVRaster pipeline and included ablations, not for every baseline comparison shown in the manuscript.
 - [x] Remove internal/local checkpoint names and obsolete experimental-stage terminology from public documentation.
 - [ ] Choose a software license and add `LICENSE`.
 - [ ] Update `CITATION.cff` with DOI/journal information after acceptance/publication.
